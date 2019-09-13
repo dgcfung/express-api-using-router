@@ -540,6 +540,18 @@ router.put('/users/:id', controllers.updateUser)
 router.delete('/users/:id', controllers.deleteUser)
 ```
 
-Test update and delete using Postman.
+Test update (PUT) in Postman. Your request body in Postman will have to look something like this:
 
-Success!
+http://localhost:3000/users/3
+
+```js
+{
+    "first_name": "John",
+    "last_name": "Smith",
+    "email": "john.smith@smith.com"
+}
+```
+
+Test delete (DEL) in Postman using a URL like this http://localhost:3000/api/users/3
+
+Success! We built a full CRUD JSON API in Express, Sequelize, and Postgress using Express Router!
