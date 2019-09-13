@@ -250,7 +250,7 @@ Let's setup the architecture:
 
 ```sh
 mkdir routes controllers
-touch server.js  routes/routes.js controllers/controllers.js
+touch server.js  routes/index.js controllers/index.js
 ```
 
 Modify your package.json file to support nodemon. Also, let's create a command `npm db:reset` that will drop the database, create the database, run the migrations, and seed!
@@ -267,7 +267,7 @@ Modify your package.json file to support nodemon. Also, let's create a command `
 
 Let's setup the root route:
 
-./routes/routes.js
+./routes/index.js
 ```js
 const { Router } = require('express');
 const router = Router();
@@ -281,7 +281,7 @@ Inside of server.js:
 
 ```js
 const express = require('express');
-const routes = require('./routes/routes');
+const routes = require('./routes');
 
 const PORT = process.env.PORT || 3000;
 
@@ -302,7 +302,7 @@ open  http://localhost:3000/api/
 
 Now let's work on the controller. The controller is where we will set up all of our logic e.g. what does the API do when we want to create a new user? Update a user? etc.
 
-./controllers/controller.js
+./controllers/index.js
 ```js
 const { User } = require('./models');
 
@@ -337,10 +337,10 @@ app.use(bodyParser.json())
 
 Cool. We have the logic to create a new user. Now let's create a route on our server to connect the request with the controller:
 
-./routes/routes.js:
+./routes/index.js:
 ```js
 const { Router } = require('express');
-const controllers = require('../controllers/controllers')
+const controllers = require('../controllers')
 const router = Router();
 
 router.get('/', (req, res) => res.send('This is root!'))
@@ -362,7 +362,7 @@ Use Postman (POST) method to test the create route (http://localhost:3000/api/us
 
 Awesome! Now I want to create a controller method to grab all the users from the database along with their associated projects:
 
-./controllers/controllers.js
+./controllers/index.js
 ```js
 const { User, Project } = require('./models');
 
@@ -398,7 +398,7 @@ module.exports = {
 }
 ```
 
-Add the following route to your ./routes/routes.js file:
+Add the following route to your ./routes/index.js file:
 
 ```js
 router.get('/users', controllers.getAllUsers)
@@ -413,7 +413,7 @@ open  http://localhost:3000/api/users
 
 Now let's add the ability to find a specific user with their associated projects:
 
-./controllers/controllers.js
+./controllers/index.js
 ```js
 const getUserById = async (req, res) => {
     try {
@@ -438,7 +438,7 @@ const getUserById = async (req, res) => {
 
 Add it to the export:
 
-./controllers/controllers.js
+./controllers/index.js
 ```js
 module.exports = {
     createUser,
@@ -449,7 +449,7 @@ module.exports = {
 
 Add the route:
 
-./routes/routes.js
+./routes/index.js
 ```js
 router.get('/users/:id', controllers.getUserById)
 ```
@@ -486,7 +486,7 @@ That's morgan!
 
 So we can now create users, show all users, and show a specific user. How about updating a user and deleting a user?
 
-./controllers/controllers.js
+./controllers/index.js
 ```js
 const updateUser = async (req, res) => {
     try {
@@ -534,7 +534,7 @@ module.exports = {
 
 Let's add our routes:
 
-./routes/routes.js
+./routes/index.js
 ```js
 router.put('/users/:id', controllers.updateUser)
 router.delete('/users/:id', controllers.deleteUser)
