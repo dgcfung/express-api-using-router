@@ -18,17 +18,74 @@ Next we will initialize a Sequelize project:
 npx sequelize-cli init
 ```
 
-Let's configure our project to work with Postgres:
+Let's setup our database credentials. Database credentials consist of sensitive data (database url, port numbers, sometimes usernames and passwords) - this is not information that we want to push up to GitHub, instead what we want to do is store this information on our local computers as environment variables so that can be accessed via JavaScript in our config files.
 
-express-api-using-router/config/config.json
+That being said, let's configure our application to support this.
+
+First, let's create a `.env` file where will be storing our sensitive information:
+
+```sh
+touch .env
+```
+
+Add the development, test, and production database url's to your `.env` file:
+
+```sh
+DATABASE_URL=
+DEV_DATABASE_URL=postgres://127.0.0.1:5432/projects_api_development
+TEST_DATABASE_URL=postgres://127.0.0.1:5432/projects_api_test
+```
+
+> Note: the production database url (DATABASE_URL) is blank intentionally because when we deploy to Heroku, Heroku will create its own production url and override this environment variable.
+
+Next, we will install an npm package called [dotenv](https://www.npmjs.com/package/dotenv) that will take whatever we wrote in our `.env` file and inject it into our system's environment variable so it can be made available via [process.env](https://nodejs.org/docs/latest/api/process.html#process_process_env).
+
+```sh
+npm install dotenv
+```
+
+Ok, so now rename `express-api-using-router/config/config.json` to `express-api-using-router/config/config.js` and replace the code with the following
+
+express-api-using-router/config/config.js
 ```js
-"development": {
-    "database": "projects_api_development",
-    "host": "127.0.0.1",
-    "dialect": "postgres",
-    "operatorsAliases": false,
-    "underscored": true
-  }
+require('dotenv').config()
+
+module.exports = {
+  development: {
+    url: process.env.DEV_DATABASE_URL,
+    dialect: 'postgres',
+    operatorsAliases: false,
+    underscored: true
+  },
+  test: {
+    url: process.env.TEST_DATABASE_URL,
+    dialect: 'postgres',
+    operatorsAliases: false,
+    underscored: true
+  },
+  production: {
+    url: process.env.DATABASE_URL,
+    dialect: 'postgres',
+    operatorsAliases: false,
+    underscored: true
+  },
+}
+```
+
+> Note: Notice how we're using process.env via the dotenv package we installed! No sensitive information in this file!
+
+Because we renamed `config.json` to `config.js` we need to make a minor edit to `express-api-using-router/models/index.js`:
+
+Find:
+
+```js
+const config = require(__dirname + '/../config/config.json')[env];
+```
+
+Replace it with:
+
+```js
+const config = require(__dirname + '/../config/config')[env];
 ```
 
 Cool, now create the Postgres database:
