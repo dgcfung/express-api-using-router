@@ -171,6 +171,7 @@ Create a .gitignore file `touch .gitignore`!
 ```sh
 /node_modules
 .DS_Store
+.env
 ```
 
 In our API, Users will have many Projects. Let's build that out:
