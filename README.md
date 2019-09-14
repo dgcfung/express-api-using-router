@@ -22,21 +22,21 @@ Let's setup our database credentials. Database credentials consist of sensitive 
 
 That being said, let's configure our application to support this.
 
-First, let's create a `.env` file where will be storing our sensitive information:
+First, let's create a `.env` file where will be storing our sensitive information, then open up VS Code:
 
 ```sh
 touch .env
+code .
 ```
 
 Add the development, test, and production database url's to your `.env` file:
 
 ```sh
-DATABASE_URL=
-DEV_DATABASE_URL=postgres://127.0.0.1:5432/projects_api_development
-TEST_DATABASE_URL=postgres://127.0.0.1:5432/projects_api_test
+DEV_DATABASE=projects_api_development
+DEV_HOST=127.0.0.1
+TEST_DATABASE=projects_api_test
+TEST_HOST=127.0.0.1
 ```
-
-> Note: the production database url (DATABASE_URL) is blank intentionally because when we deploy to Heroku, Heroku will create its own production url and override this environment variable.
 
 Next, we will install an npm package called [dotenv](https://www.npmjs.com/package/dotenv) that will take whatever we wrote in our `.env` file and inject it into our system's environment variable so it can be made available via [process.env](https://nodejs.org/docs/latest/api/process.html#process_process_env).
 
@@ -52,18 +52,18 @@ require('dotenv').config()
 
 module.exports = {
   development: {
-    url: process.env.DEV_DATABASE_URL,
-    database: 'projects_api_development',
+    database: process.env.DEV_DATABASE,
+    host: process.env.DEV_HOST,
     dialect: 'postgres'
   },
   test: {
-    url: process.env.TEST_DATABASE_URL,
-    database: 'projects_api_test',
+    database: process.env.TEST_DATABASE,
+    host: process.env.TEST_HOST,
     dialect: 'postgres'
   },
   production: {
-    url: process.env.DATABASE_URL,
-    database: 'projects_api',
+    database: process.env.DATABASE,
+    host: process.env.HOST,
     dialect: 'postgres'
   },
 }
@@ -94,7 +94,7 @@ npx sequelize-cli db:create
 Next we will create a User model:
 
 ```sh
-npx sequelize-cli model:generate --name User --attributes first_name:string,last_name:string,email:string,password:string
+npx sequelize-cli model:generate --name User --attributes firstName:string,lastName:string,email:string,password:string
 ```
 > Checkout the Sequelize Data Types that are available: https://sequelize.org/master/manual/data-types.html
 
@@ -115,8 +115,6 @@ npx sequelize-cli seed:generate --name users
 Let's edit the seed file:
 
 ```js
-'use strict';
-
 module.exports = {
   up: (queryInterface, Sequelize) => {
     return queryInterface.bulkInsert('Users', [{
@@ -128,20 +126,20 @@ module.exports = {
       updatedAt: new Date()
     },
     {
-      first_name: 'John',
-      last_name: 'Smith',
+      firstName: 'John',
+      lastName: 'Smith',
       email: 'john@smith.com',
       password: '123456789',
-      created_at: new Date(),
-      updated_at: new Date()
+      createdAt: new Date(),
+      updatedAt: new Date()
     },
     {
-      first_name: 'John',
-      last_name: 'Stone',
+      firstName: 'John',
+      lastName: 'Stone',
       email: 'john@stone.com',
       password: '123456789',
-      created_at: new Date(),
-      updated_at: new Date()
+      createdAt: new Date(),
+      updatedAt: new Date()
     }], {});
   },
 
@@ -169,34 +167,27 @@ SELECT * FROM "Users";
 Create a .gitignore file `touch .gitignore`!
 
 ```sh
+echo "
 /node_modules
 .DS_Store
-.env
+.env" >> .gitignore
 ```
 
 In our API, Users will have many Projects. Let's build that out:
 
 ```sh
-npx sequelize-cli model:generate --name Project --attributes title:string,image_url:string,description:text,userId:integer
+npx sequelize-cli model:generate --name Project --attributes title:string,imageUrl:string,description:text,userId:integer
 ```
 
 Make sure we create the association between Project and User (belongs to):
 
 ```js
-'use strict';
 module.exports = (sequelize, DataTypes) => {
   const Project = sequelize.define('Project', {
     title: DataTypes.STRING,
-    image_url: DataTypes.STRING,
+    imageUrl: DataTypes.STRING,
     description: DataTypes.TEXT,
-    userId: {
-      type: DataTypes.INTEGER,
-      references: {
-        model: 'User',
-        key: 'id',
-        as: 'userId',
-      }
-    }
+    userId: DataTypes.INTEGER
   }, {});
   Project.associate = function (models) {
     // associations can be defined here
@@ -208,19 +199,19 @@ module.exports = (sequelize, DataTypes) => {
   return Project;
 };
 ```
+> Note: `onDelete: 'CASCADE'` means that if we delete a user we also delete all their associated projects.
 
 Setup the assocation between User and Project (has many):
 
 ```js
-'use strict';
 module.exports = (sequelize, DataTypes) => {
   const User = sequelize.define('User', {
-    first_name: DataTypes.STRING,
-    last_name: DataTypes.STRING,
+    firstName: DataTypes.STRING,
+    lastName: DataTypes.STRING,
     email: DataTypes.STRING,
     password: DataTypes.STRING
   }, {});
-  User.associate = function(models) {
+  User.associate = function (models) {
     // associations can be defined here
     User.hasMany(models.Project, {
       foreignKey: 'userId'
@@ -230,7 +221,53 @@ module.exports = (sequelize, DataTypes) => {
 };
 ```
 
-> Note: `onDelete: 'CASCADE'` means that if we delete a user we also delete all their associated projects.
+Add the foreign key to the migration file:
+
+/migrations/<timestamp>-create-project.js
+```js
+'use strict';
+module.exports = {
+  up: (queryInterface, Sequelize) => {
+    return queryInterface.createTable('Projects', {
+      id: {
+        allowNull: false,
+        autoIncrement: true,
+        primaryKey: true,
+        type: Sequelize.INTEGER
+      },
+      title: {
+        type: Sequelize.STRING
+      },
+      imageUrl: {
+        type: Sequelize.STRING
+      },
+      description: {
+        type: Sequelize.TEXT
+      },
+      userId: {
+        type: Sequelize.INTEGER,
+        onDelete: 'CASCADE',
+        references: {
+          model: 'Users',
+          key: 'id',
+          as: 'userId',
+        }
+      },
+      createdAt: {
+        allowNull: false,
+        type: Sequelize.DATE
+      },
+      updatedAt: {
+        allowNull: false,
+        type: Sequelize.DATE
+      }
+    });
+  },
+  down: (queryInterface, Sequelize) => {
+    return queryInterface.dropTable('Projects');
+  }
+};  
+```
 
 Perform the migration to create the Projects table in the Postgres database:
 
