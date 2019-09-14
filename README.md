@@ -29,7 +29,7 @@ touch .env
 code .
 ```
 
-Add the development, test, and production database url's to your `.env` file:
+Add the development and test database sensitive information to your .env file:
 
 ```sh
 DEV_DATABASE=projects_api_development
