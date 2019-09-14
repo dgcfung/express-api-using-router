@@ -9,7 +9,7 @@
 
 ```sh
 cd express-api-using-router
-npm init -y && npm install sequelize &&  npm install --save-dev sequelize-cli
+npm init -y && npm install sequelize pg &&  npm install --save-dev sequelize-cli
 ```
 
 Next we will initialize a Sequelize project:
@@ -53,21 +53,18 @@ require('dotenv').config()
 module.exports = {
   development: {
     url: process.env.DEV_DATABASE_URL,
-    dialect: 'postgres',
-    operatorsAliases: false,
-    underscored: true
+    database: 'projects_api_development',
+    dialect: 'postgres'
   },
   test: {
     url: process.env.TEST_DATABASE_URL,
-    dialect: 'postgres',
-    operatorsAliases: false,
-    underscored: true
+    database: 'projects_api_test',
+    dialect: 'postgres'
   },
   production: {
     url: process.env.DATABASE_URL,
-    dialect: 'postgres',
-    operatorsAliases: false,
-    underscored: true
+    database: 'projects_api',
+    dialect: 'postgres'
   },
 }
 ```
@@ -97,7 +94,7 @@ npx sequelize-cli db:create
 Next we will create a User model:
 
 ```sh
-npx sequelize-cli model:generate --name User --attributes first_name:string,last_name:string,email:string --underscored
+npx sequelize-cli model:generate --name User --attributes first_name:string,last_name:string,email:string,password:string
 ```
 > Checkout the Sequelize Data Types that are available: https://sequelize.org/master/manual/data-types.html
 
@@ -123,16 +120,18 @@ Let's edit the seed file:
 module.exports = {
   up: (queryInterface, Sequelize) => {
     return queryInterface.bulkInsert('Users', [{
-      first_name: 'John',
-      last_name: 'Doe',
+      firstName: 'John',
+      lastName: 'Doe',
       email: 'john@doe.com',
-      created_at: new Date(),
-      updated_at: new Date()
+      password: '123456789',
+      createdAt: new Date(),
+      updatedAt: new Date()
     },
     {
       first_name: 'John',
       last_name: 'Smith',
       email: 'john@smith.com',
+      password: '123456789',
       created_at: new Date(),
       updated_at: new Date()
     },
@@ -140,6 +139,7 @@ module.exports = {
       first_name: 'John',
       last_name: 'Stone',
       email: 'john@stone.com',
+      password: '123456789',
       created_at: new Date(),
       updated_at: new Date()
     }], {});
@@ -177,7 +177,7 @@ Create a .gitignore file `touch .gitignore`!
 In our API, Users will have many Projects. Let's build that out:
 
 ```sh
-npx sequelize-cli model:generate --name Project --attributes title:string,image_url:string,description:text,user_id:integer --underscored
+npx sequelize-cli model:generate --name Project --attributes title:string,image_url:string,description:text,userId:integer
 ```
 
 Make sure we create the association between Project and User (belongs to):
@@ -189,13 +189,21 @@ module.exports = (sequelize, DataTypes) => {
     title: DataTypes.STRING,
     image_url: DataTypes.STRING,
     description: DataTypes.TEXT,
-    user_id: DataTypes.INTEGER
-  }, {
-    underscored: true,
-  });
+    userId: {
+      type: DataTypes.INTEGER,
+      references: {
+        model: 'User',
+        key: 'id',
+        as: 'userId',
+      }
+    }
+  }, {});
   Project.associate = function (models) {
     // associations can be defined here
-    Project.belongsTo(models.User)
+    Project.belongsTo(models.User, {
+      foreignKey: 'userId',
+      onDelete: 'CASCADE'
+    })
   };
   return Project;
 };
@@ -209,14 +217,13 @@ module.exports = (sequelize, DataTypes) => {
   const User = sequelize.define('User', {
     first_name: DataTypes.STRING,
     last_name: DataTypes.STRING,
-    email: DataTypes.STRING
-  }, {
-    underscored: true,
-  });
+    email: DataTypes.STRING,
+    password: DataTypes.STRING
+  }, {});
   User.associate = function(models) {
     // associations can be defined here
     User.hasMany(models.Project, {
-      onDelete: 'CASCADE'
+      foreignKey: 'userId'
     })
   };
   return User;
@@ -248,33 +255,33 @@ module.exports = {
       title: 'Project 1',
       image_url: 'https://upload.wikimedia.org/wikipedia/commons/6/6a/JavaScript-logo.png',
       description: 'This project was built using Vanilla JavaScript, HTML, and CSS',
-      user_id: 1,
-      created_at: new Date(),
-      updated_at: new Date()
+      userId: 1,
+      createdAt: new Date(),
+      updatedAt: new Date()
     },
     {
       title: 'Project 2',
       image_url: 'https://www.stickpng.com/assets/images/584830f5cef1014c0b5e4aa1.png',
       description: 'This project was built using React & a 3rd-party API.',
-      user_id: 1,
-      created_at: new Date(),
-      updated_at: new Date()
+      userId: 1,
+      createdAt: new Date(),
+      updatedAt: new Date()
     },
     {
       title: 'Project 3',
       image_url: 'https://expressjs.com/images/express-facebook-share.png',
       description: 'This project was built using Express & React.',
-      user_id: 1,
-      created_at: new Date(),
-      updated_at: new Date()
+      userId: 1,
+      createdAt: new Date(),
+      updatedAt: new Date()
     },
     {
       title: 'Project 4',
       image_url: 'https://upload.wikimedia.org/wikipedia/commons/1/16/Ruby_on_Rails-logo.png',
       description: 'This project was built using Rails & React.',
-      user_id: 1,
-      created_at: new Date(),
-      updated_at: new Date()
+      userId: 1,
+      createdAt: new Date(),
+      updatedAt: new Date()
     }], {});
   },
 
@@ -294,7 +301,7 @@ Make sure the data exists on the database:
 
 ```sh
 psql projects_api_development
-SELECT * FROM "Users" JOIN "Projects" ON "Users".id = "Projects".user_id;
+SELECT * FROM "Users" JOIN "Projects" ON "Users".id = "Projects"."userId";
 ```
 
 Cool, enough Sequelize. Now, let's setup the server and routes. First install Express:
@@ -412,9 +419,10 @@ Use Postman (POST) method to test the create route (http://localhost:3000/api/us
 
 ```js
 {
-  "first_name": "Jane",
-  "last_name": "Smith",
-  "email": "jane@smith.com"
+  "firstName": "Jane",
+  "lastName": "Smith",
+  "email": "jane@smith.com",
+  "password": "123456789"
 }
 ```
 
@@ -604,8 +612,8 @@ http://localhost:3000/users/3
 
 ```js
 {
-    "first_name": "John",
-    "last_name": "Smith",
+    "firstName": "John",
+    "lastName": "Smith",
     "email": "john.smith@smith.com"
 }
 ```
