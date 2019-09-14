@@ -223,7 +223,7 @@ module.exports = (sequelize, DataTypes) => {
 
 Add the foreign key to the migration file:
 
-migrations/<timestamp>-create-project.js
+migrations/20190914222216-create-project.js
 ```js
 'use strict';
 module.exports = {
@@ -283,14 +283,13 @@ npx sequelize-cli seed:generate --name projects
 
 Add some code to the seed file:
 
+seeders/20190914230148-projects.js
 ```js
-'use strict';
-
 module.exports = {
   up: (queryInterface, Sequelize) => {
     return queryInterface.bulkInsert('Projects', [{
       title: 'Project 1',
-      image_url: 'https://upload.wikimedia.org/wikipedia/commons/6/6a/JavaScript-logo.png',
+      imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/6/6a/JavaScript-logo.png',
       description: 'This project was built using Vanilla JavaScript, HTML, and CSS',
       userId: 1,
       createdAt: new Date(),
@@ -298,7 +297,7 @@ module.exports = {
     },
     {
       title: 'Project 2',
-      image_url: 'https://www.stickpng.com/assets/images/584830f5cef1014c0b5e4aa1.png',
+      imageUrl: 'https://www.stickpng.com/assets/images/584830f5cef1014c0b5e4aa1.png',
       description: 'This project was built using React & a 3rd-party API.',
       userId: 1,
       createdAt: new Date(),
@@ -306,7 +305,7 @@ module.exports = {
     },
     {
       title: 'Project 3',
-      image_url: 'https://expressjs.com/images/express-facebook-share.png',
+      imageUrl: 'https://expressjs.com/images/express-facebook-share.png',
       description: 'This project was built using Express & React.',
       userId: 1,
       createdAt: new Date(),
@@ -314,7 +313,7 @@ module.exports = {
     },
     {
       title: 'Project 4',
-      image_url: 'https://upload.wikimedia.org/wikipedia/commons/1/16/Ruby_on_Rails-logo.png',
+      imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/1/16/Ruby_on_Rails-logo.png',
       description: 'This project was built using Rails & React.',
       userId: 1,
       createdAt: new Date(),
@@ -331,7 +330,7 @@ module.exports = {
 Run the seed file:
 
 ```sh
-npx sequelize-cli db:seed:all
+npx sequelize-cli db:seed --seed 20190914230148-projects.js
 ```
 
 Make sure the data exists on the database:
@@ -388,7 +387,6 @@ const routes = require('./routes');
 const PORT = process.env.PORT || 3000;
 
 const app = express();
-app.use(express.json());
 
 app.use('/api', routes);
 
@@ -399,14 +397,15 @@ Test the route:
 
 ```sh
 npm start
-open  http://localhost:3000/api/
 ```
 
-Now let's work on the controller. The controller is where we will set up all of our logic e.g. what does the API do when we want to create a new user? Update a user? etc.
+Test the root endpoint in your browser:  http://localhost:3000/api/
+
+Good, now let's work on the controller. The controller is where we will set up all of our logic e.g. what does the API do when we want to create a new user? Update a user? etc.
 
 ./controllers/index.js
 ```js
-const { User } = require('./models');
+const { User } = require('../models');
 
 const createUser = async (req, res) => {
     try {
@@ -452,6 +451,12 @@ router.post('/users', controllers.createUser)
 module.exports = router;
 ```
 
+Make sure your json api server is running:
+
+```js
+npm start
+```
+
 Use Postman (POST) method to test the create route (http://localhost:3000/api/users):
 
 ```js
@@ -467,7 +472,7 @@ Awesome! Now I want to create a controller method to grab all the users from the
 
 ./controllers/index.js
 ```js
-const { User, Project } = require('./models');
+const { User, Project } = require('../models');
 
 const createUser = async (req, res) => {
     try {
@@ -511,10 +516,11 @@ Test the route:
 
 ```sh
 npm start
-open  http://localhost:3000/api/users
 ```
 
-Now let's add the ability to find a specific user with their associated projects:
+Open http://localhost:3000/api/users in your browser or do a GET request in Postman.
+
+Nice, now let's add the ability to find a specific user with their associated projects:
 
 ./controllers/index.js
 ```js
@@ -651,7 +657,8 @@ http://localhost:3000/users/3
 {
     "firstName": "John",
     "lastName": "Smith",
-    "email": "john.smith@smith.com"
+    "email": "john.smith@smith.com",
+    "password": "superPass1"
 }
 ```
 
