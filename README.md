@@ -223,7 +223,7 @@ module.exports = (sequelize, DataTypes) => {
 
 Add the foreign key to the migration file:
 
-/migrations/<timestamp>-create-project.js
+migrations/<timestamp>-create-project.js
 ```js
 'use strict';
 module.exports = {
