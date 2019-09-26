@@ -23,21 +23,21 @@ Let's setup our database configuration:
 express-api/config/config.json
 ```js
 {
-	"development": {
-		"database": "projects_api_development",
-		"dialect": "postgres"
-	},
-	"test": {
-		"database": "projects_api_test",
-		"dialect": "postgres"
-	},
-	"production": {
-		"use_env_variable": "DATABASE_URL",
-		"dialect": "postgres",
-		"dialectOptions": {
-			"ssl": true
-		}
-	}
+  "development": {
+    "database": "projects_api_development",
+    "dialect": "postgres"
+  },
+  "test": {
+    "database": "projects_api_test",
+    "dialect": "postgres"
+  },
+  "production": {
+    "use_env_variable": "DATABASE_URL",
+    "dialect": "postgres",
+    "dialectOptions": {
+      "ssl": true
+    }
+  }
 }
 ```
 
