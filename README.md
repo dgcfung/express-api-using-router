@@ -5,7 +5,7 @@
 1. Fork
 1. Clone
 
-# Express API
+# Express API using Router
 
 ```sh
 cd express-api-using-router
@@ -18,72 +18,30 @@ Next we will initialize a Sequelize project:
 npx sequelize-cli init
 ```
 
-Let's setup our database credentials. Database credentials consist of sensitive data (database url, port numbers, sometimes usernames and passwords) - this is not information that we want to push up to GitHub, instead what we want to do is store this information on our local computers as environment variables so that can be accessed via JavaScript in our config files.
+Let's setup our database configuration:
 
-That being said, let's configure our application to support this.
-
-First, let's create a `.env` file where will be storing our sensitive information, then open up VS Code:
-
-```sh
-touch .env
-code .
-```
-
-Add the development and test database sensitive information to your .env file:
-
-```sh
-DEV_DATABASE=projects_api_development
-DEV_HOST=127.0.0.1
-TEST_DATABASE=projects_api_test
-TEST_HOST=127.0.0.1
-```
-
-Next, we will install an npm package called [dotenv](https://www.npmjs.com/package/dotenv) that will take whatever we wrote in our `.env` file and inject it into our system's environment variable so it can be made available via [process.env](https://nodejs.org/docs/latest/api/process.html#process_process_env).
-
-```sh
-npm install dotenv
-```
-
-Ok, so now rename `express-api-using-router/config/config.json` to `express-api-using-router/config/config.js` and replace the code with the following
-
-express-api-using-router/config/config.js
+express-api/config/config.json
 ```js
-require('dotenv').config()
-
-module.exports = {
-  development: {
-    database: process.env.DEV_DATABASE,
-    host: process.env.DEV_HOST,
-    dialect: 'postgres'
-  },
-  test: {
-    database: process.env.TEST_DATABASE,
-    host: process.env.TEST_HOST,
-    dialect: 'postgres'
-  },
-  production: {
-    database: process.env.DATABASE,
-    host: process.env.HOST,
-    dialect: 'postgres'
-  },
+{
+	"development": {
+		"database": "projects_api_development",
+		"dialect": "postgres"
+	},
+	"test": {
+		"database": "projects_api_test",
+		"dialect": "postgres"
+	},
+	"production": {
+		"use_env_variable": "DATABASE_URL",
+		"dialect": "postgres",
+		"dialectOptions": {
+			"ssl": true
+		}
+	}
 }
 ```
 
-> Note: Notice how we're using process.env via the dotenv package we installed! No sensitive information in this file!
-
-Because we renamed `config.json` to `config.js` we need to make a minor edit to `express-api-using-router/models/index.js`:
-
-Find:
-
-```js
-const config = require(__dirname + '/../config/config.json')[env];
-```
-
-Replace it with:
-
-```js
-const config = require(__dirname + '/../config/config')[env];
-```
+> Notice: For production we use `use_env_variable` and `DATABASE_URL`. We are going to deploy this app to [Heroku](https://www.heroku.com). Heroku is smart enough to replace `DATABASE_URL` with the production database. You will see this at the end of the lesson.
 
 Cool, now create the Postgres database:
 
@@ -665,3 +623,44 @@ http://localhost:3000/users/3
 Test delete (DEL) in Postman using a URL like this http://localhost:3000/api/users/3
 
 Success! We built a full CRUD JSON API in Express, Sequelize, and Postgress using Express Router!
+
+### Deployment
+
+Let's deploy our app to [heroku](https://www.heroku.com).
+
+First we need to update our package.json:
+
+```js
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js",
+    "dev": "nodemon server.js",
+    "db:reset": "npx sequelize-cli db:drop && npx sequelize-cli db:create && npx sequelize-cli db:migrate && npx sequelize-cli db:seed:all"
+  },
+```
+
+> Make sure you're on the `master` branch!
+
+1. `heroku create my-app-name`
+2. `heroku buildpacks:set heroku/nodejs`
+3. `heroku addons:create heroku-postgresql:hobby-dev --app=express-api-0002`
+4. `git add .`
+5. `git commit -m "add any pending changes"`
+6. `git push heroku master`
+7. `heroku run npx sequelize-cli db:migrate`
+8. `heroku run npx sequelize-cli db:seed:all`
+
+> Having issues? Debug with the Heroku command `heroku logs --tail` to see what's happening on the Heroku server.
+
+Test the endpoints :)
+
+> https://my-app-name.herokuapp.com/products
+> https://my-app-name.herokuapp.com/products/1
+
+**Excellent!**
+
+> ✊ **Fist to Five**
+
+## Feedback
+
+> [Take a minute to give us feedback on this lesson so we can improve it!](https://forms.gle/vgUoXbzxPWf4oPCX6)
