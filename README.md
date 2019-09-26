@@ -643,9 +643,9 @@ First we need to update our package.json:
 
 1. `heroku create my-app-name`
 2. `heroku buildpacks:set heroku/nodejs`
-3. `heroku addons:create heroku-postgresql:hobby-dev --app=express-api-0002`
-4. `git add .`
-5. `git commit -m "add any pending changes"`
+3. `heroku addons:create heroku-postgresql:hobby-dev --app=my-app-name`
+4. `git status`
+5. `git commit -am "add any pending changes"`
 6. `git push heroku master`
 7. `heroku run npx sequelize-cli db:migrate`
 8. `heroku run npx sequelize-cli db:seed:all`
