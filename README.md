@@ -641,9 +641,9 @@ First we need to update our package.json:
 
 > Make sure you're on the `master` branch!
 
-1. `heroku create my-app-name`
+1. `heroku create your-heroku-app-name`
 2. `heroku buildpacks:set heroku/nodejs`
-3. `heroku addons:create heroku-postgresql:hobby-dev --app=my-app-name`
+3. `heroku addons:create heroku-postgresql:hobby-dev --app=your-heroku-app-name`
 4. `git status`
 5. `git commit -am "add any pending changes"`
 6. `git push heroku master`
@@ -654,8 +654,9 @@ First we need to update our package.json:
 
 Test the endpoints :)
 
-> https://my-app-name.herokuapp.com/products
-> https://my-app-name.herokuapp.com/products/1
+> https://your-heroku-app-name.herokuapp.com/products
+
+> https://your-heroku-app-name.herokuapp.com/products/1
 
 **Excellent!**
 
