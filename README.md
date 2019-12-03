@@ -609,7 +609,7 @@ router.delete('/users/:id', controllers.deleteUser)
 
 Test update (PUT) in Postman. Your request body in Postman will have to look something like this:
 
-http://localhost:3000/users/3
+http://localhost:3000/api/users/3
 
 ```js
 {
@@ -654,9 +654,9 @@ First we need to update our package.json:
 
 Test the endpoints :)
 
-> https://your-heroku-app-name.herokuapp.com/products
+> https://your-heroku-app-name.herokuapp.com/api/projects
 
-> https://your-heroku-app-name.herokuapp.com/products/1
+> https://your-heroku-app-name.herokuapp.com/api/projects/1
 
 **Excellent!**
 
