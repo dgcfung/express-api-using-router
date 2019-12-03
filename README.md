@@ -626,7 +626,7 @@ Success! We built a full CRUD JSON API in Express, Sequelize, and Postgress usin
 
 ### Deployment
 
-Let's deploy our app to [heroku](https://www.heroku.com).
+Let's deploy our app to [heroku](https://devcenter.heroku.com/articles/heroku-cli#download-and-install).
 
 First we need to update our package.json:
 
