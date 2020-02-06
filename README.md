@@ -361,87 +361,11 @@ Test the root endpoint in your browser:  http://localhost:3000/api/
 
 Good, now let's work on the controller. The controller is where we will set up all of our logic e.g. what does the API do when we want to create a new user? Update a user? etc.
 
-./controllers/index.js
-```js
-const { User } = require('../models');
-
-const createUser = async (req, res) => {
-    try {
-        const user = await User.create(req.body);
-        return res.status(201).json({
-            user,
-        });
-    } catch (error) {
-        return res.status(500).json({ error: error.message })
-    }
-}
-
-module.exports = {
-    createUser,
-}
-```
-
-Remember we will need the expressnbody-parser middleware to access the `req.body` object so: 
-
-```sh
-npm i body-parser
-```
-
-Add the following lines of code to the top of server.js:
-
-```js
-const bodyParser = require('body-parser');
-app.use(bodyParser.json())
-```
-
-Cool. We have the logic to create a new user. Now let's create a route on our server to connect the request with the controller:
-
-./routes/index.js:
-```js
-const { Router } = require('express');
-const controllers = require('../controllers')
-const router = Router();
-
-router.get('/', (req, res) => res.send('This is root!'))
-
-router.post('/users', controllers.createUser)
-
-module.exports = router;
-```
-
-Make sure your json api server is running:
-
-```js
-npm start
-```
-
-Use Postman (POST) method to test the create route (http://localhost:3000/api/users):
-
-```js
-{
-  "firstName": "Jane",
-  "lastName": "Smith",
-  "email": "jane@smith.com",
-  "password": "123456789"
-}
-```
-
-Awesome! Now I want to create a controller method to grab all the users from the database along with their associated projects:
+Now I want to create a controller method to grab all the users from the database along with their associated projects:
 
 ./controllers/index.js
 ```js
 const { User, Project } = require('../models');
-
-const createUser = async (req, res) => {
-    try {
-        const user = await User.create(req.body);
-        return res.status(201).json({
-            user,
-        });
-    } catch (error) {
-        return res.status(500).json({ error: error.message })
-    }
-}
 
 const getAllUsers = async (req, res) => {
     try {
@@ -508,7 +432,6 @@ Add it to the export:
 ./controllers/index.js
 ```js
 module.exports = {
-    createUser,
     getAllUsers,
     getUserById
 }
@@ -551,76 +474,9 @@ GET /api/users/2 304 104.273 ms
 
 That's morgan!
 
-So we can now create users, show all users, and show a specific user. How about updating a user and deleting a user?
-
-./controllers/index.js
-```js
-const updateUser = async (req, res) => {
-    try {
-        const { id } = req.params;
-        const [updated] = await User.update(req.body, {
-            where: { id: id }
-        });
-        if (updated) {
-            const updatedUser = await User.findOne({ where: { id: id } });
-            return res.status(200).json({ user: updatedUser });
-        }
-        throw new Error('User not found');
-    } catch (error) {
-        return res.status(500).send(error.message);
-    }
-};
-
-const deleteUser = async (req, res) => {
-    try {
-        const { id } = req.params;
-        const deleted = await User.destroy({
-            where: { id: id }
-        });
-        if (deleted) {
-            return res.status(204).send("User deleted");
-        }
-        throw new Error("User not found");
-    } catch (error) {
-        return res.status(500).send(error.message);
-    }
-};
-```
+So we can now show all users, and show a specific user.
 
 Make sure your exports are updated:
-
-```js
-module.exports = {
-    createUser,
-    getAllUsers,
-    getUserById,
-    updateUser,
-    deleteUser
-}
-```
-
-Let's add our routes:
-
-./routes/index.js
-```js
-router.put('/users/:id', controllers.updateUser)
-router.delete('/users/:id', controllers.deleteUser)
-```
-
-Test update (PUT) in Postman. Your request body in Postman will have to look something like this:
-
-http://localhost:3000/api/users/3
-
-```js
-{
-    "firstName": "John",
-    "lastName": "Smith",
-    "email": "john.smith@smith.com",
-    "password": "superPass1"
-}
-```
-
-Test delete (DEL) in Postman using a URL like this http://localhost:3000/api/users/3
 
 Success! We built a full CRUD JSON API in Express, Sequelize, and Postgress using Express Router!
 
